@@ -1,0 +1,4 @@
+{
+  "code": "_$: s(\"[bd <hh oh>]*2\").bank(\"tr909\").dec(.4)\n\n$: note(\"c2 d3 e4 f5 a1\").sound(\"piano\").gain(0.5)\n._pianoroll()",
+  "updatedAt": 1767108145221
+}
