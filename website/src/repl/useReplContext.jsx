@@ -68,6 +68,12 @@ export function useReplContext() {
   const defaultOutput = shouldUseWebaudio ? webaudioOutput : superdirtOutput;
   const getTime = shouldUseWebaudio ? getAudioContextCurrentTime : getPerformanceTimeSeconds;
 
+    // roomid
+  const roomId =
+    typeof window !== 'undefined'
+      ? window.location.pathname.split('/').pop()
+      : null;
+
   const init = useCallback(() => {
     const drawTime = [-2, 2];
     const drawContext = getDrawContext();
@@ -87,7 +93,23 @@ export function useReplContext() {
       prebake: async () => Promise.all([modulesLoading, presets]),
       onUpdateState: (state) => {
         setReplState({ ...state });
+
+        if (
+          socketRef.current &&
+          socketRef.current.readyState === WebSocket.OPEN &&
+          !isRemoteUpdate.current
+        ) {
+          console.log('[ws] sending code update');
+          socketRef.current.send(
+            JSON.stringify({
+              type: 'code',
+              room: roomId,
+              code: state.code,
+            })
+          );
+        }
       },
+
       onToggle: (playing) => {
         if (!playing) {
           clearHydra();
@@ -100,7 +122,7 @@ export function useReplContext() {
         window.parent?.postMessage(code);
 
         setLatestCode(code);
-        window.location.hash = '#' + code2hash(code);
+        //window.location.hash = '#' + code2hash(code);
         setDocumentTitle(code);
         const viewingPatternData = getViewingPatternData();
         setVersionDefaultsFrom(code);
@@ -153,6 +175,50 @@ export function useReplContext() {
   const { started, isDirty, error, activeCode, pending } = replState;
   const editorRef = useRef();
   const containerRef = useRef();
+  const socketRef = useRef(null);
+  const isRemoteUpdate = useRef(false);
+
+
+  useEffect(() => {
+    if (!roomId) return;
+
+    console.log('[ws] connecting to room', roomId);
+
+    const socket = new WebSocket('ws://localhost:1234');
+    socketRef.current = socket;
+
+    socket.onopen = () => {
+      console.log('[ws] connected, joining room', roomId);
+      socket.send(
+        JSON.stringify({
+          type: 'join',
+          room: roomId,
+        })
+      );
+    };
+
+    socket.onmessage = (event) => {
+      const msg = JSON.parse(event.data);
+
+      if (msg.type === 'code') {
+        console.log('[ws] received code update');
+        isRemoteUpdate.current = true;
+        editorRef.current?.setCode(msg.code);
+        isRemoteUpdate.current = false;
+      }
+    };
+
+    socket.onerror = (err) => {
+      console.error('[ws] error', err);
+    };
+
+    socket.onclose = () => {
+      console.log('[ws] disconnected');
+    };
+
+    return () => socket.close();
+  }, [roomId]);
+
 
   // this can be simplified once SettingsTab has been refactored to change codemirrorSettings directly!
   // this will be the case when the main repl is being replaced
