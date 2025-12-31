@@ -9,7 +9,10 @@ if (!fs.existsSync(ROOMS_DIR)) {
   fs.mkdirSync(ROOMS_DIR);
 }
 
-const wss = new WebSocketServer({ port: PORT });
+const wss = new WebSocketServer({ 
+  port: PORT,
+  host: '::',
+});
 
 // roomId → { clients: Set<ws>, code: string }
 const rooms = new Map();
