@@ -135,6 +135,9 @@ export default defineConfig({
   site,
   base,
   vite: {
+    server: {
+      allowedHosts: ['burrson.de'],
+    },
     plugins: [bundleAudioWorkletPlugin()],
     ssr: {
       // Example: Force a broken package to skip SSR processing, if needed
