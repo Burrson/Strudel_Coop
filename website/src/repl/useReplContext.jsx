@@ -184,7 +184,7 @@ export function useReplContext() {
 
     console.log('[ws] connecting to room', roomId);
 
-    const socket = new WebSocket('ws://burrson.de:1234');
+    const socket = new WebSocket('ws://www.burrson.de:1234');
     socketRef.current = socket;
 
     socket.onopen = () => {

@@ -137,6 +137,7 @@ export default defineConfig({
   vite: {
     server: {
       allowedHosts: ['burrson.de'],
+      allowedHosts: ['www.burrson.de'],
     },
     plugins: [bundleAudioWorkletPlugin()],
     ssr: {

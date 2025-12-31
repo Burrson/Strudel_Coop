@@ -11,7 +11,7 @@ if (!fs.existsSync(ROOMS_DIR)) {
 
 const wss = new WebSocketServer({ 
   port: PORT,
-  host: '::',
+  //host: '::',
 });
 
 // roomId → { clients: Set<ws>, code: string }
